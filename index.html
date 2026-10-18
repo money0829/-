@@ -1,1 +1,158 @@
-
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>國文量詞隨機練習</title>
+<style>
+:root{--green:#087f70;--mint:#e8f7f2;--ink:#1f2937;--muted:#64748b;--line:#dbe7e3;--paper:#fff}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(135deg,#effaf6,#f7fafc);font-family:-apple-system,BlinkMacSystemFont,"Noto Sans TC","PingFang TC",sans-serif;color:var(--ink);min-height:100vh}
+main{width:min(760px,100%);margin:auto;padding:22px 16px 40px}.top{display:flex;align-items:center;gap:12px;margin:8px 0 20px}.logo{background:#d8f3e9;border-radius:15px;padding:12px;font-size:26px}.top h1{font-size:clamp(22px,5vw,30px);margin:0}.sub{color:var(--muted);font-size:14px;margin-top:5px}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:22px;padding:clamp(18px,4vw,30px);box-shadow:0 10px 30px #184e4210}.hidden{display:none!important}
+h2{font-size:21px;margin:0 0 12px}.muted{color:var(--muted)}.settings{display:grid;gap:12px;margin:20px 0}.choice{display:flex;align-items:center;gap:10px;padding:13px 14px;border:1px solid var(--line);border-radius:12px;cursor:pointer}.choice:has(input:checked){border-color:var(--green);background:var(--mint)}input[type=radio]{accent-color:var(--green)}
+button{font:inherit;font-weight:700;border:0;border-radius:12px;padding:13px 16px;cursor:pointer;transition:.15s}button:active{transform:scale(.99)}.primary{background:var(--green);color:#fff;width:100%}.secondary{background:#f1f5f9;color:#334155;border:1px solid #e2e8f0}.actions{display:flex;gap:10px;margin-top:16px}.actions button{flex:1}.meta{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:14px;color:var(--muted);margin-bottom:12px}.pill{background:var(--mint);color:var(--green);padding:6px 10px;border-radius:999px;font-weight:700}.bar{height:7px;background:#edf2f0;border-radius:99px;overflow:hidden;margin:12px 0 22px}.bar span{display:block;height:100%;background:var(--green);width:0;transition:width .2s}.question{font-size:clamp(26px,7vw,36px);font-weight:800;text-align:center;padding:22px 0 26px}.options{display:grid;gap:10px}.opt{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:white;border:1px solid var(--line);color:var(--ink);padding:13px;border-radius:13px}.letter{display:grid;place-items:center;flex:none;width:32px;height:32px;border:1px solid #d4dedb;border-radius:50%;font-weight:800}.opt.correct{border-color:#16a34a;background:#dcfce7}.opt.wrong{border-color:#dc2626;background:#fee2e2}.feedback{margin-top:15px;background:#f1f5f9;padding:14px;border-radius:12px;line-height:1.7}.feedback strong{display:block;margin-bottom:4px}.score{text-align:center;padding:16px 0}.score .big{font-size:42px;font-weight:900;color:var(--green);margin:8px}.review-list{display:grid;gap:10px;margin:18px 0}.review-item{border:1px solid var(--line);border-radius:12px;padding:13px;line-height:1.65}.review-item b{display:block}.small{font-size:13px}.footer{text-align:center;color:#94a3b8;font-size:12px;margin-top:18px}
+</style>
+</head>
+<body>
+<main>
+  <header class="top"><div class="logo">📚</div><div><h1>國文量詞隨機練習</h1><div class="sub">隨機抽題・選項洗牌・即時解析・錯題複習</div></div></header>
+  <section class="card" id="home">
+    <h2>每次挑戰都是新組合</h2>
+    <p class="muted">從量詞題庫隨機抽題，並重新排列選項。每回合內不會重複出現同一題。</p>
+    <div class="settings">
+      <label class="choice"><input type="radio" name="amount" value="10" checked> 10 題｜快速練習</label>
+      <label class="choice"><input type="radio" name="amount" value="20"> 20 題｜一般測驗</label>
+      <label class="choice"><input type="radio" name="amount" value="50"> 50 題｜加強複習</label>
+      <label class="choice"><input type="radio" name="amount" value="all"> 全部題庫｜完整挑戰</label>
+    </div>
+    <button class="primary" id="start">🔀 隨機出題，開始測驗</button>
+    <p class="small muted">題庫依照你提供的量詞表整理；每次重新開始會重新抽題及打亂選項。</p>
+  </section>
+  <section class="card hidden" id="quiz">
+    <div class="meta"><span class="pill" id="round">第 1 回合</span><span id="progress">1 / 10</span></div>
+    <div class="bar"><span id="bar"></span></div>
+    <div class="meta"><span>目前答對</span><strong id="liveScore">0 題</strong></div>
+    <div class="question" id="question"></div>
+    <div class="options" id="options"></div>
+    <div class="feedback hidden" id="feedback" aria-live="polite"></div>
+    <div class="actions"><button class="secondary" id="quit">結束本回合</button><button class="primary" id="next" disabled>下一題 →</button></div>
+  </section>
+  <section class="card hidden" id="results">
+    <div class="score"><div style="font-size:40px">🏆</div><h2>本回合完成！</h2><div class="big" id="score">0 / 10</div><div id="percent"></div></div>
+    <div class="review-list" id="review"></div>
+    <button class="primary" id="again">🔀 再抽一組全新題目</button>
+    <div style="height:10px"></div><button class="secondary" style="width:100%" id="back">返回設定</button>
+  </section>
+  <div class="footer">國文量詞練習網站 · 可在手機瀏覽器使用</div>
+</main>
+<script>
+const bank = [
+["一（　）人馬","幫",["幫","部","批","班"],"「一幫人馬」是固定搭配。"],
+["一（　）辭典","部",["部","本","張","把"],"辭典可用「部」。"],
+["三（　）飛機","班",["班","架","列","部"],"量詞表中的搭配是「三班飛機」。"],
+["一（　）錢","筆",["筆","把","枚","張"],"金錢數額可用「筆」。"],
+["一（　）眼淚","把",["把","滴","抹","串"],"量詞表列有「一把眼淚」。"],
+["一（　）人","票",["票","批","幫","群"],"「一票人」是口語搭配。"],
+["一（　）旅客","批",["批","列","隊","班"],"旅客可用「批」。"],
+["兩（　）綢子","匹",["匹","幅","卷","段"],"布匹可用「匹」。"],
+["第二（　）茶","泡",["泡","壺","盅","杯"],"泡茶的次數可用「泡」。"],
+["兩（　）事","碼",["碼","件","宗","樁"],"「兩碼事」指兩回事。"],
+["一（　）餘暉","抹",["抹","道","束","縷"],"「一抹餘暉」是固定搭配。"],
+["一（　）國旗","面",["面","幅","張","枚"],"旗子可用「面」。"],
+["一（　）口罩","枚",["枚","片","張","副"],"圖片量詞表列有「一枚口罩」。"],
+["一（　）功課","門",["門","科","節","份"],"功課可用「門」。"],
+["一（　）油畫","幅",["幅","幀","張","部"],"圖畫常用「幅」。"],
+["一（　）對聯","副",["副","幅","張","對"],"對聯可用「副」。"],
+["一（　）手帕","方",["方","條","張","塊"],"手帕可用「方」。"],
+["白費一（　）苦心","番",["番","次","場","輪"],"「一番苦心」是固定搭配。"],
+["一（　）摩托車","部",["部","輛","台","架"],"量詞表中的例子是「一部摩托車」。"],
+["一（　）時間","段",["段","刻","次","輪"],"時間可用「段」。"],
+["一（　）樹","棵",["棵","顆","枚","束"],"樹木用「棵」。"],
+["一（　）扁舟","葉",["葉","尾","艘","幅"],"「一葉扁舟」是固定搭配。"],
+["一（　）書生","介",["介","員","幫","伙"],"「一介書生」指讀書人。"],
+["一（　）火車","列",["列","架","部","艘"],"火車用「列」。"],
+["一（　）炸彈","枚",["枚","顆","棵","幅"],"炸彈常用「枚」。"],
+["一（　）屍體","具",["具","副","幀","束"],"屍體用「具」。"],
+["一（　）好酒","盅",["盅","壺","碟","帖"],"「一盅好酒」是常見搭配。"],
+["一（　）房子","幢",["幢","幅","棵","列"],"房屋可用「幢」。"],
+["一（　）新衣","襲",["襲","盞","截","撮"],"「一襲新衣」是固定搭配。"],
+["一（　）車禍","起",["起","則","道","回"],"事故、案件常用「起」。"],
+["一（　）鮮花","束",["束","尾","匹","輪"],"花可以用「束」。"],
+["一（　）明月","輪",["輪","枚","顆","棵"],"「一輪明月」是固定搭配。"],
+["一（　）電影","部",["部","本","張","把"],"電影用「部」。"],
+["兩（　）牛排","客",["客","碟","壺","帖"],"牛排可用「客」。"],
+["兩（　）課","節",["節","幅","艘","尾"],"課程用「節」。"],
+["一（　）魚","尾",["尾","棵","列","副"],"魚可用「尾」。"],
+["兩（　）棉被","床",["床","束","列","枚"],"棉被用「床」。"],
+["一（　）牆","堵",["堵","幅","棵","匹"],"牆可用「堵」。"],
+["一（　）飯","頓",["頓","枚","幅","尾"],"吃飯的次數用「頓」。"],
+["一（　）蝴蝶","對",["對","雙","列","把"],"成雙的蝴蝶可用「對」。"],
+["兩（　）瓜子","碟",["碟","盞","幢","艘"],"瓜子放在碟中可說「兩碟瓜子」。"],
+["一（　）草帽","頂",["頂","幀","束","具"],"帽子用「頂」。"],
+["一（　）時間","段",["段","道","枚","尾"],"時間可用「段」。"],
+["一道（　）","菜",["菜","棵","艘","盞"],"菜餚可說「一道菜」。"],
+["一（　）中藥","帖",["帖","列","幅","尾"],"中藥可用「帖」。"],
+["一（　）茶","壺",["壺","床","尾","棵"],"茶可用「壺」。"],
+["一（　）理論","套",["套","束","尾","盅"],"理論可用「套」。"],
+["去過三（　）","趟",["趟","枚","幢","盞"],"前往的次數可用「趟」。"],
+["一（　）毛線","團",["團","列","幀","口"],"毛線可用「團」。"],
+["一（　）被子","領",["領","尾","枚","幅"],"「一領被子」是量詞表中的搭配。"],
+["一（　）士兵","列",["列","束","盅","顆"],"排成一列可用「列」。"],
+["一（　）頭髮","縷",["縷","盞","席","客"],"頭髮可用「縷」。"],
+["一（　）幽香","股",["股","枚","尾","幢"],"氣味可用「股」。"],
+["一（　）糖果","顆",["顆","棵","幅","列"],"顆粒狀物品可用「顆」。"],
+["六點一（　）","刻",["刻","客","捆","番"],"一刻是十五分鐘。"],
+["一家五（　）","口",["口","尾","幀","輪"],"計算家庭人口用「口」。"],
+["兩（　）木材","捆",["捆","幅","盅","枚"],"成捆的木材用「捆」。"],
+["一（　）新聞","則",["則","束","艘","棵"],"新聞可用「則」。"],
+["一（　）棋","局",["局","尾","匹","盞"],"棋局用「局」。"],
+["三（　）車廂","節",["節","顆","幅","口"],"車廂可用「節」。"],
+["一（　）甘蔗","截",["截","幢","副","盅"],"一段甘蔗可用「截」。"],
+["一（　）悶棍","記",["記","束","列","艘"],"打擊動作可用「記」。"],
+["一（　）草","莖",["莖","幢","口","幅"],"植物的莖可用「莖」。"],
+["一（　）平民","介",["介","部","盅","尾"],"「一介平民」是固定搭配。"],
+["兩（　）電視機","架",["架","尾","束","枚"],"量詞表列有「兩架電視機」。"],
+["一（　）書","卷",["卷","尾","盅","棵"],"書卷可用「卷」。"],
+["一（　）菜園","畦",["畦","枚","口","幢"],"菜園的一小塊可用「畦」。"],
+["三（　）毛線","球",["球","幅","列","床"],"毛線可用「球」。"],
+["兩（　）案件","起",["起","尾","盞","匹"],"案件可用「起」。"],
+["一（　）話","席",["席","枚","棵","艘"],"「一席話」指一番話。"],
+["一（　）燈","盞",["盞","束","尾","列"],"燈可用「盞」。"],
+["三（　）香","炷",["炷","棵","枚","幢"],"香可用「炷」。"],
+["一（　）風","陣",["陣","床","幅","客"],"風可用「陣」。"],
+["一（　）山水畫","幀",["幀","部","口","尾"],"圖像可用「幀」。"],
+["一（　）婚事","椿",["椿","艘","顆","束"],"「一椿婚事」是量詞表中的搭配。"],
+["繞場一（　）","周",["周","尾","盞","副"],"繞一圈可用「周」。"],
+["打了一（　）止痛劑","針",["針","幅","列","幢"],"注射可用「針」。"],
+["一（　）房子","幢",["幢","盅","截","束"],"房屋可用「幢」。"],
+["一（　）銅錢","串",["串","幅","尾","客"],"串在一起的銅錢可用「串」。"],
+["一（　）鮮花","束",["束","列","盞","口"],"鮮花可用「束」。"],
+["退避三（　）","舍",["舍","尾","幅","枚"],"「退避三舍」是固定成語。"],
+["兩（　）門板","扇",["扇","束","盅","棵"],"門板可用「扇」。"],
+["寫一（　）好字","手",["手","艘","幢","尾"],"「一手好字」指字寫得好。"],
+["頭一（　）","遭",["遭","盞","尾","棵"],"「頭一遭」指第一次。"],
+["千（　）難逢","載",["載","碗","束","匹"],"「千載難逢」指很難遇到。"],
+["一（　）非法買賣","宗",["宗","尾","幅","盞"],"事件、買賣可用「宗」。"],
+["三（　）佛像","尊",["尊","尾","列","截"],"佛像可用「尊」。"],
+["兩（　）頭髮","撮",["撮","幢","盞","口"],"少量頭髮可用「撮」。"],
+["十（　）船","艘",["艘","幅","口","顆"],"船用「艘」。"],
+["兩（　）魚","尾",["尾","棵","架","副"],"魚可用「尾」。"],
+["一（　）新月","彎",["彎","束","盅","部"],"「一彎新月」是固定搭配。"],
+["一（　）藥","味",["味","尾","幢","束"],"中藥的一種可用「味」。"],
+["一（　）健將","員",["員","尾","幅","棵"],"人員可用「員」。"],
+["一（　）手續","道",["道","束","尾","幢"],"手續可用「道」。"],
+["一（　）口井","口",["口","枚","幅","尾"],"井可用「口」。"],
+["一（　）明月","輪",["輪","顆","枚","把"],"「一輪明月」是固定搭配。"],
+["一（　）案件","起",["起","則","束","尾"],"案件可用「起」。"],
+["一（　）畫","幅",["幅","部","尾","口"],"圖畫常用「幅」。"]
+];
+const $=id=>document.getElementById(id);
+let session=[],answers=[],pos=0,round=0,amount=10;
+function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function start(){amount=document.querySelector('input[name="amount"]:checked').value;amount=amount==="all"?bank.length:Number(amount);session=shuffle(bank).slice(0,Math.min(amount,bank.length)).map(q=>{const opts=shuffle(q[2]);return {q:q[0],a:q[1],opts,correct:opts.indexOf(q[1]),why:q[3]}});answers=[];pos=0;round++;$('home').classList.add('hidden');$('results').classList.add('hidden');$('quiz').classList.remove('hidden');render()}
+function render(){const q=session[pos];$('round').textContent=`第 ${round} 回合`;$('progress').textContent=`${pos+1} / ${session.length}`;$('bar').style.width=`${(pos+1)/session.length*100}%`;$('question').textContent=q.q;$('liveScore').textContent=answers.filter((a,i)=>a===session[i].correct).length+' 題';$('options').innerHTML='';$('feedback').classList.add('hidden');$('next').disabled=true;$('next').textContent=pos===session.length-1?'查看成績 →':'下一題 →';q.opts.forEach((opt,i)=>{const b=document.createElement('button');b.className='opt';b.innerHTML=`<span class="letter">${'ABCD'[i]}</span><span>${opt}</span>`;b.onclick=()=>answer(i);$('options').appendChild(b)})}
+function answer(i){if(answers[pos]!==undefined)return;answers[pos]=i;const q=session[pos];[...$('options').children].forEach((b,j)=>{b.disabled=true;if(j===q.correct)b.classList.add('correct');if(j===i&&i!==q.correct)b.classList.add('wrong')});$('feedback').classList.remove('hidden');$('feedback').innerHTML=`<strong>${i===q.correct?'✅ 答對了！':'💡 再記一次！'}</strong>正確答案：${q.a}<br>${q.why}`;$('liveScore').textContent=answers.filter((a,k)=>a===session[k].correct).length+' 題';$('next').disabled=false}
+function finish(){$('quiz').classList.add('hidden');$('results').classList.remove('hidden');const correct=answers.filter((a,i)=>a===session[i].correct).length;$('score').textContent=`${correct} / ${session.length}`;$('percent').textContent=`答對率 ${Math.round(correct/session.length*100)}% · 答錯 ${session.length-correct} 題`;$('review').innerHTML='';session.forEach((q,i)=>{const d=document.createElement('div');d.className='review-item';d.innerHTML=`<b>${answers[i]===q.correct?'✅':'❌'} ${q.q}</b>你的答案：${q.opts[answers[i]]??'未作答'}<br>正確答案：<strong>${q.a}</strong><br><span class="muted">${q.why}</span>`;$('review').appendChild(d)})}
+$('start').addEventListener('click', start);$('again').addEventListener('click', start);$('back').addEventListener('click',()=>{$('results').classList.add('hidden');$('home').classList.remove('hidden')});$('next').addEventListener('click',()=>{if(pos<session.length-1){pos++;render()}else finish()});$('quit').addEventListener('click',()=>{if(confirm('確定結束本回合嗎？目前作答不會保留。')){$('quiz').classList.add('hidden');$('home').classList.remove('hidden')}});
+</script>
+</body></html>
